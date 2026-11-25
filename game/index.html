@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Satay Smoke — Night-Market Grill Rush</title>
+<meta name="viewport" content="width=1280">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  html, body { background: #1a0e08; }
+  body { font-family: "Trebuchet MS", Verdana, sans-serif; color: #fff3e0; overflow: hidden; }
+  #stage { width: 1280px; height: 480px; margin: 0 auto; position: relative;
+    background: linear-gradient(180deg, #2b1608 0%, #3a1e0c 55%, #241207 100%); transform-origin: top center; }
+  /* ---------- header ---------- */
+  header { height: 52px; display: flex; align-items: center; gap: 14px; padding: 0 14px;
+    background: linear-gradient(180deg, #572a10, #3c1c09); border-bottom: 3px solid #ff8c1a; }
+  .logo { font-size: 26px; font-weight: 900; letter-spacing: 1px; color: #ffd23e; white-space: nowrap; }
+  .logo small { display: block; font-size: 10px; letter-spacing: 3px; color: #ffb37a; font-weight: 700; }
+  .timerbox { flex: 1; text-align: center; }
+  .timer { font-size: 30px; font-weight: 900; color: #fff; letter-spacing: 2px; line-height: 1; }
+  .timer.low { color: #ff5252; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .45; } }
+  .tbar { height: 8px; background: #5d2f14; border-radius: 4px; margin-top: 3px; overflow: hidden; }
+  .tbar > div { height: 100%; background: linear-gradient(90deg, #37d67a, #ffd23e 60%, #ff5252); }
+  .stat { text-align: right; font-size: 13px; font-weight: 700; line-height: 1.25; white-space: nowrap; }
+  .stat b { color: #ffd23e; font-size: 19px; }
+  .stat .coins { color: #7be495; }
+  /* ---------- main row ---------- */
+  main { display: flex; height: 388px; padding: 8px 10px; gap: 10px; }
+  .panel { background: rgba(0,0,0,.28); border: 2px solid #6b3a17; border-radius: 10px; padding: 7px 8px; }
+  .panel h2 { font-size: 13px; letter-spacing: 2px; color: #ffb37a; margin-bottom: 6px; }
+  .panel h2 span { float: right; color: #ffd23e; letter-spacing: 0; }
+  /* order board */
+  #orders { width: 296px; flex: none; }
+  .ticket { background: #fff8ea; color: #3a1e0c; border-radius: 8px; padding: 6px 8px; margin-bottom: 7px;
+    border-left: 8px solid #ff8c1a; position: relative; }
+  .ticket.urgent { border-left-color: #ff3838; background: #ffe9e2; }
+  .ticket.done { border-left-color: #37d67a; opacity: .75; }
+  .ticket .dish { font-size: 16px; font-weight: 900; }
+  .ticket .need { font-size: 12px; font-weight: 700; color: #7a4a1e; margin: 2px 0 4px; }
+  .ticket .price { position: absolute; right: 8px; top: 6px; font-size: 15px; font-weight: 900; color: #1d8a46; }
+  .pbar { height: 10px; background: #e8d5b5; border-radius: 5px; overflow: hidden; }
+  .pbar > div { height: 100%; background: #37b24d; }
+  .ticket.urgent .pbar > div { background: #ff3838; }
+  .ticket .icons { display: flex; gap: 4px; margin-top: 4px; }
+  .mini { width: 26px; height: 26px; border-radius: 6px; background: #ffe3b3; display: flex;
+    align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #5d2f14; }
+  .mini svg { width: 20px; height: 20px; }
+  /* kitchen */
+  #kitchen { flex: 1; display: flex; flex-direction: column; gap: 7px; min-height: 0; }
+  #grill { flex: 1.15; min-height: 0; position: relative; background: linear-gradient(180deg, #4a4a52, #2c2c31);
+    border: 2px solid #6b3a17; border-radius: 10px; padding: 5px 10px; }
+  #grill h2 { font-size: 13px; letter-spacing: 2px; color: #ffb37a; white-space: nowrap; }
+  .burners { display: flex; gap: 12px; margin-top: 4px; }
+  .burner { flex: 1; background: #17171a; border-radius: 8px; padding: 4px 6px 5px; text-align: center;
+    border: 2px solid #55555e; cursor: pointer; position: relative; min-height: 0; }
+  .burner.hot { border-color: #ff8c1a; box-shadow: 0 0 12px rgba(255,140,26,.55); }
+  .burner .flame { height: 34px; line-height: 0; }
+  .burner .flame svg { width: 32px; height: 32px; }
+  .burner .sk { font-size: 13px; font-weight: 900; margin-top: 2px; }
+  .burner .doneness { height: 12px; background: #33333a; border-radius: 6px; margin-top: 5px; overflow: hidden; position: relative; }
+  .burner .doneness > div { height: 100%; }
+  .burner .doneness .zone { position: absolute; top: 0; bottom: 0; left: 68%; width: 27%;
+    background: rgba(55,214,122,.35); border-left: 2px solid #37d67a; border-right: 2px solid #37d67a; }
+  .burner .dlabel { font-size: 11px; font-weight: 900; margin-top: 3px; letter-spacing: 1px; }
+  .burner .dlabel.perfect { color: #37d67a; } .burner .dlabel.cooking { color: #ffd23e; }
+  .burner .dlabel.burnt { color: #ff5252; } .burner .dlabel.empty { color: #8a8a92; }
+  .skewer-art { display: flex; justify-content: center; gap: 3px; margin-top: 4px; height: 22px; align-items: center; }
+  .skewer-art i { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
+  /* assembly + counter */
+  #mid { flex: 1; display: flex; gap: 8px; min-height: 0; }
+  #plate { flex: 1.25; background: rgba(0,0,0,.28); border: 2px solid #6b3a17; border-radius: 10px;
+    padding: 6px 9px; position: relative; }
+  #plate h2 { font-size: 13px; letter-spacing: 2px; color: #ffb37a; }
+  #plate .dishname { font-size: 17px; font-weight: 900; color: #ffd23e; margin: 2px 0; }
+  #plate .slots { display: flex; gap: 6px; margin: 5px 0; }
+  .slot { flex: 1; height: 44px; border: 2px dashed #8a5a28; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: #c98f4e; background: rgba(255,255,255,.05); }
+  .slot.filled { border-style: solid; border-color: #37d67a; background: #1d4d2a; color: #b8f5cd; font-size: 15px; }
+  #plate .sauces { display: flex; gap: 6px; }
+  .sauce { flex: 1; text-align: center; font-size: 11px; font-weight: 900; padding: 4px 0 3px;
+    border-radius: 7px; background: #4a2410; border: 2px solid #8a5a28; cursor: pointer; }
+  .sauce.on { border-color: #ffd23e; background: #6b3a17; color: #ffd23e; }
+  #counter { flex: 1; background: rgba(0,0,0,.28); border: 2px solid #6b3a17; border-radius: 10px; padding: 6px 8px; }
+  #counter h2 { font-size: 13px; letter-spacing: 2px; color: #ffb37a; }
+  .bins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
+  .bin { background: #fff3df; color: #3a1e0c; border-radius: 8px; padding: 4px 2px 3px; text-align: center;
+    cursor: pointer; border: 2px solid transparent; }
+  .bin:hover { border-color: #ffd23e; }
+  .bin.sel { border-color: #ffd23e; box-shadow: 0 0 0 2px #ff8c1a inset; }
+  .bin .ic { height: 30px; display: flex; align-items: center; justify-content: center; }
+  .bin .ic svg { width: 28px; height: 28px; }
+  .bin .nm { font-size: 12px; font-weight: 900; }
+  .bin .key { font-size: 10px; color: #8a5a28; font-weight: 700; }
+  /* serve station */
+  #serve { width: 300px; flex: none; display: flex; flex-direction: column; }
+  #serve .ready { font-size: 15px; font-weight: 900; color: #37d67a; letter-spacing: 1px; }
+  #serve .ready.wait { color: #c98f4e; }
+  .serveplate { background: #fff8ea; border-radius: 50%; width: 118px; height: 118px; margin: 8px auto 4px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+    border: 6px solid #e8d5b5; }
+  .serveplate.full { border-color: #37d67a; box-shadow: 0 0 18px rgba(55,214,122,.5); }
+  .serveplate .food { font-size: 15px; font-weight: 900; color: #3a1e0c; text-align: center; line-height: 1.3; }
+  #serveBtn { display: block; width: 100%; margin-top: 6px; padding: 10px 0; font-size: 24px; font-weight: 900;
+    letter-spacing: 2px; color: #3a1e0c; background: linear-gradient(180deg, #ffd23e, #ff8c1a);
+    border: none; border-radius: 10px; cursor: pointer; }
+  #serveBtn:disabled { background: #5d4a33; color: #a08a6a; cursor: default; }
+  #serveBtn.go { animation: pulse 0.7s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.04); } }
+  .combo { margin-top: 7px; font-size: 14px; font-weight: 900; text-align: center; }
+  .combo b { color: #ffd23e; font-size: 20px; }
+  .tip { margin-top: 5px; font-size: 12px; color: #ffb37a; text-align: center; font-weight: 700; min-height: 16px; }
+  /* footer */
+  footer { height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px;
+    background: #241207; border-top: 2px solid #6b3a17; font-size: 12px; font-weight: 700; color: #d8a06a; }
+  footer b { color: #ffd23e; }
+  /* overlays */
+  .overlay { position: absolute; inset: 0; background: rgba(20,8,2,.82); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; z-index: 10; border-radius: 0; }
+  .overlay h1 { font-size: 58px; font-weight: 900; color: #ffd23e; letter-spacing: 2px; text-shadow: 0 4px 0 #b34700; }
+  .overlay h1 span { color: #ff8c1a; }
+  .overlay .sub { font-size: 19px; font-weight: 700; color: #fff3e0; margin-top: 4px; letter-spacing: 1px; }
+  .overlay .cta { margin-top: 16px; font-size: 22px; font-weight: 900; background: linear-gradient(180deg,#ffd23e,#ff8c1a);
+    color: #3a1e0c; padding: 10px 34px; border-radius: 12px; }
+  .overlay .feats { margin-top: 14px; font-size: 14px; font-weight: 700; color: #ffb37a; line-height: 1.7; }
+  .overlay .big { font-size: 30px; font-weight: 900; color: #fff; margin-top: 6px; }
+  .overlay .stars { font-size: 44px; letter-spacing: 8px; color: #ffd23e; margin: 6px 0; }
+  .overlay .score-line { font-size: 19px; font-weight: 900; color: #7be495; }
+  .overlay .detail { font-size: 14px; font-weight: 700; color: #ffb37a; margin-top: 6px; line-height: 1.7; }
+  .burst { position: absolute; right: 330px; top: 120px; z-index: 9; font-size: 26px; font-weight: 900; color: #7be495;
+    text-shadow: 0 2px 0 #0b3d1e; transform: rotate(-6deg); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <header>
+    <div class="logo">SATAY SMOKE<small>NIGHT-MARKET GRILL RUSH</small></div>
+    <div class="timerbox">
+      <div class="timer" id="timer">TIME 3:00</div>
+      <div class="tbar"><div id="tbarFill" style="width:100%"></div></div>
+    </div>
+    <div class="stat">SCORE <b id="score">0</b><br><span class="coins">$<span id="coins">0</span></span> &nbsp;SERVED <b id="served">0/12</b></div>
+  </header>
+  <main>
+    <section class="panel" id="orders">
+      <h2>ORDER BOARD <span id="dayLabel">DAY 1</span></h2>
+      <div id="ticketList"></div>
+    </section>
+    <section id="kitchen">
+      <div id="grill">
+        <h2>GRILL — 3 BURNERS · GREEN ZONE = PERFECT</h2>
+        <div class="burners" id="burners"></div>
+      </div>
+      <div id="mid">
+        <div id="plate">
+          <h2>DISH MID-ASSEMBLY</h2>
+          <div class="dishname" id="plateDish">Chicken Satay Plate</div>
+          <div class="slots" id="plateSlots"></div>
+          <div class="sauces" id="sauceRow"></div>
+        </div>
+        <div id="counter">
+          <h2>INGREDIENTS — ON THE COUNTER</h2>
+          <div class="bins" id="bins"></div>
+        </div>
+      </div>
+    </section>
+    <section class="panel" id="serve">
+      <h2>PLATE READY TO SERVE</h2>
+      <div class="ready wait" id="readyLabel">BUILD THE PLATE FIRST…</div>
+      <div class="serveplate" id="servePlate"><div class="food" id="serveFood">— empty plate —</div></div>
+      <button id="serveBtn" disabled>SERVE ▸</button>
+      <div class="combo">COMBO <b id="combo">×1</b> &nbsp;·&nbsp; BEST <b id="bestCombo">×1</b></div>
+      <div class="tip" id="tipLine">Serve fast for bigger tips!</div>
+    </section>
+  </main>
+  <footer>
+    <span><b>1–6</b> pick ingredient &nbsp;·&nbsp; <b>Click grill</b> flip skewer &nbsp;·&nbsp; <b>SPACE</b> serve &nbsp;·&nbsp; <b>P</b> pause</span>
+    <span>12 orders · 6 skewers · 4 sauces · 3 burners · 1 timer</span>
+  </footer>
+  <div class="burst hidden" id="burst">+$18 TIP!</div>
+  <div class="overlay hidden" id="startOverlay">
+    <h1>SATAY <span>SMOKE</span></h1>
+    <div class="sub">NIGHT-MARKET GRILL RUSH — COOK · ASSEMBLE · SERVE BEFORE THE TIMER ENDS</div>
+    <div class="cta">▶ &nbsp;CLICK TO START — DAY 1</div>
+    <div class="feats">12 ORDERS &nbsp;·&nbsp; 6 SKEWERS &nbsp;·&nbsp; 4 SAUCES &nbsp;·&nbsp; 3 BURNERS &nbsp;·&nbsp; COMBOS &amp; TIPS &nbsp;·&nbsp; NO NETWORK, PLAYS OFFLINE</div>
+  </div>
+  <div class="overlay hidden" id="endOverlay">
+    <div class="sub">DAY 1 COMPLETE — THE MARKET CROWD GOES HOME HAPPY</div>
+    <div class="stars">★★★</div>
+    <div class="big" id="endScore">SCORE 2,480</div>
+    <div class="score-line" id="endLine">12 ORDERS SERVED · BEST COMBO ×7 · $96 EARNED</div>
+    <div class="detail" id="endDetail">0 burnt skewers · 9 perfect grills · 3 five-star tips</div>
+    <div class="cta">↻ &nbsp;PLAY DAY 2</div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
